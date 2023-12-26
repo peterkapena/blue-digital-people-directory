@@ -11,13 +11,15 @@ import TextField from "../components/TextField";
 import Password from "../components/Password";
 import { SubmitLoadingButton } from "../components/SubmitLoadingButton";
 import { Notice } from "../components/Notice";
+import { LoginModelIn, LoginModelOut } from "../api/login";
+import useApi, { API_RSRC_LINKS } from "../api/useApi";
 
 export default function Page() {
   const [showSubmitButton, setShowSubmitButton] = useState(true);
   const [messages, setMessages] = useState<string[]>([]);
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState<boolean>();
+  const { isLoading, error, fetchData } = useApi<LoginModelOut, LoginModelIn>(API_RSRC_LINKS.login, { triggerOnLoad: false, method: "POST" });
 
   const {
     register,
@@ -27,32 +29,27 @@ export default function Page() {
     resolver: zodResolver(FormSchema),
     defaultValues: {
       email_or_username: IS_DEVELOPER ? "peterkapenapeter@gmail.com" : "",
-      password: IS_DEVELOPER ? "1234567P" : "",
+      password: IS_DEVELOPER ? "PPPPPPP@PPPPP" : "",
     },
   });
 
-
-  const processForm: SubmitHandler<FormSchemaType> = async (data) => {
+  const processForm: SubmitHandler<FormSchemaType> = async (form_data) => {
     try {
-      setIsLoading(true);
+      if (IS_DEVELOPER) console.log(form_data);
+      const rtn = await fetchData({ email: form_data.email_or_username, password: form_data.password })
 
-      const rtn = await signin(data.email_or_username, data.password);
-
-      if (IS_DEVELOPER) console.log(rtn);
-
-      if (rtn?.messages.length > 0) {
-        setMessages(["sign in failed"]);
+      if (!rtn || rtn?.errors.length > 0) {
+        setMessages(["Login failed"]);
       } else if (rtn?.token) {
-        sessionStorage.setItem(STR_TOKEN, rtn.token);
+        sessionStorage.setItem(STR_TOKEN, rtn?.token);
         await new Promise((resolve) => setTimeout(resolve, 1000));
         window.location.href = ROUTES.HOME;
       }
-      setIsSuccess(Boolean(rtn?.messages.length === 0));
-    } catch (error) {
-      setMessages(["sign in failed"]);
+      setIsSuccess(rtn?.errors.length === 0);
+    } catch (err) {
+      setMessages(["Login failed"]);
       console.error(error);
-    } finally {
-      setIsLoading(false);
+      console.error(err);
     }
   };
 
@@ -147,8 +144,3 @@ const FormSchema = z.object({
 });
 
 type FormSchemaType = z.infer<typeof FormSchema>;
-
-async function signin(email_or_username: string, password: string): Promise<any> {
-  throw new Error("Function not implemented.");
-}
-

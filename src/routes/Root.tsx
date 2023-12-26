@@ -1,28 +1,23 @@
 import { Outlet } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, } from "react";
 import { IS_DEVELOPER, ROUTES, STR_TOKEN } from "../common";
 import { useAppDispatch } from "../redux/hooks";
 import { setUser } from "../redux/user-slice";
-import useApi, { API_RSRC_LINKS } from "../useApi";
-
-interface VerifyTokenOut {
-  email: string, token: string, errors: []
-}
+import useApi, { API_RSRC_LINKS } from "../api/useApi";
+import { LoginModelOut } from "../api/login";
 
 export default function Root() {
-  const [loaded, setLoaded] = useState(false);
   const token = sessionStorage.getItem(STR_TOKEN);
+  if (!token) window.location.href = ROUTES.SIGNIN;
 
   const dispatch = useAppDispatch();
 
-  const { data, isLoading, error } = useApi<VerifyTokenOut>(API_RSRC_LINKS.login);
-
+  const { isLoading, error, fetchData } = useApi<LoginModelOut>(API_RSRC_LINKS.verify_tkn, { triggerOnLoad: false, method: "POST" });
 
   useEffect(() => {
     const verifyTokenAsync = async () => {
       try {
-        if (!token) window.location.href = ROUTES.SIGNIN;
-
+        const data = await fetchData(null);
         if (IS_DEVELOPER) console.log(data);
         if (data?.token) {
           const {
@@ -39,8 +34,6 @@ export default function Root() {
               },
             })
           );
-          setLoaded(!isLoading);
-
         } else {
           sessionStorage.removeItem(STR_TOKEN);
           window.location.href = ROUTES.SIGNIN;
@@ -50,9 +43,9 @@ export default function Root() {
       }
     };
     verifyTokenAsync();
-  }, [dispatch, token, data, isLoading]);
+  }, [dispatch]);
 
-  if (loaded && !error) return <Home />;
+  if (!isLoading && !error) return <Home />;
   else
     return (
       <>

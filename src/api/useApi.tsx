@@ -1,24 +1,26 @@
 import { useState, useEffect, useCallback } from 'react';
-import { STR_TOKEN } from './common';
+import { STR_TOKEN } from '../common';
 
-interface UseApiProps {
+interface UseApiProps<IN> {
     url?: string;
     method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
-    body?: any;
+    body?: IN | null;
     headers?: Record<string, string>;
+    triggerOnLoad?: boolean;
 }
 
-function useApi<T = any>(rsrc_link: string, {
+function useApi<OUT, IN = null>(rsrc_link: string, {
     url = process.env.REACT_APP_API_URL ?? "",
     method = 'GET',
     body = null,
-    headers = {}
-}: UseApiProps = {}) {
-    const [data, setData] = useState<T | null>(null);
+    headers = {},
+    triggerOnLoad = true
+}: UseApiProps<IN> = {}) {
+    const [data, setData] = useState<OUT | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
-    const fetchData = useCallback(async () => {
+    const fetchData = useCallback(async (bdy: IN | null): Promise<OUT | null> => {
         setIsLoading(true);
         setError(null);
 
@@ -36,31 +38,36 @@ function useApi<T = any>(rsrc_link: string, {
             const requestOptions: RequestInit = {
                 method,
                 headers: _headers,
-                body: method !== 'GET' && body ? JSON.stringify(body) : null,
+                body: method !== 'GET' && bdy ? JSON.stringify(bdy) : null,
             };
 
             const response = await fetch(url + rsrc_link, requestOptions);
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
-            const result: T = await response.json();
+            const result: OUT = await response.json();
             setData(result);
+            return result
         } catch (error) {
             setError(error instanceof Error ? error.message : String(error));
+            return null;
         } finally {
             setIsLoading(false);
         }
-    }, [url, method, body, headers, rsrc_link]);
+    }, [url, method, headers, rsrc_link]);
 
     useEffect(() => {
-        fetchData();
-    }, [fetchData, data, isLoading]);
+        if (triggerOnLoad) {
+            fetchData(body);
+        }
+    }, [fetchData, triggerOnLoad, body]);
 
-    return { data, isLoading, error };
+    return { data, isLoading, error, fetchData };
 }
 
 export default useApi;
 
 export const API_RSRC_LINKS = {
-    login: "user/login"
+    login: "user/login",
+    verify_tkn: "user/verify_tkn",
 }
