@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { STR_TOKEN } from '../common';
+import { IS_DEVELOPER, STR_TOKEN } from '../common';
 
 interface UseApiProps<IN> {
     url?: string;
@@ -47,6 +47,7 @@ function useApi<OUT, IN = null>(rsrc_link: string, {
             }
             const result: OUT = await response.json();
             setData(result);
+            IS_DEVELOPER && console.log(result)
             return result
         } catch (error) {
             setError(error instanceof Error ? error.message : String(error));
@@ -70,4 +71,9 @@ export default useApi;
 export const API_RSRC_LINKS = {
     login: "user/login",
     verify_tkn: "user/verify_tkn",
+    register: "user/register",
+}
+
+export interface CommonOutputModel {
+    errors: any[]
 }

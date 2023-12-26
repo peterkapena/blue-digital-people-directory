@@ -5,7 +5,10 @@ import { useAppSelector } from "./hooks";
 // Define a type for the slice state
 interface UserState {
   email?: string | null | undefined;
+  role?: Role;
 }
+
+export type Role = "ADMIN" | "CLIENT"
 
 // Define the initial state using that type
 const initialState: UserState = {
@@ -17,6 +20,7 @@ export const UserSlice = createSlice({
   reducers: {
     setUser: (state, action: PayloadAction<{ user: UserState }>) => {
       state.email = action.payload.user.email;
+      state.role = action.payload.user.role;
     },
     signOut: () => {
       sessionStorage.removeItem(STR_TOKEN);

@@ -11,7 +11,7 @@ type SubmitButtonProps = {
 export function SubmitButton({
   showReturn: hideReturn = true,
   content = "Submit",
-}: SubmitButtonProps): React.ReactNode {
+}: SubmitButtonProps): JSX.Element {
   const navigate = useNavigate();
   return (
     <Box>

@@ -4,7 +4,7 @@ import { IS_DEVELOPER, ROUTES, STR_TOKEN } from "../common";
 import { useAppDispatch } from "../redux/hooks";
 import { setUser } from "../redux/user-slice";
 import useApi, { API_RSRC_LINKS } from "../api/useApi";
-import { LoginModelOut } from "../api/login";
+import { VerifyTokenOut } from "../api/login";
 import { CssVarsProvider, CssBaseline, Box } from "@mui/joy";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
@@ -15,7 +15,7 @@ export default function Root() {
 
   const dispatch = useAppDispatch();
 
-  const { isLoading, error, fetchData } = useApi<LoginModelOut>(API_RSRC_LINKS.verify_tkn, { triggerOnLoad: false, method: "POST" });
+  const { isLoading, error, fetchData } = useApi<VerifyTokenOut>(API_RSRC_LINKS.verify_tkn, { triggerOnLoad: false, method: "POST" });
 
   useEffect(() => {
     const verifyTokenAsync = async () => {
@@ -26,14 +26,15 @@ export default function Root() {
           const {
             email,
             token,
+            role
           } = data;
 
           sessionStorage.setItem(STR_TOKEN, token);
-
           dispatch(
             setUser({
               user: {
                 email,
+                role
               },
             })
           );

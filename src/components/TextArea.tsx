@@ -14,7 +14,7 @@ interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   maxRows?: string | number;
 }
 
-export default function ({
+export default function TextArea ({
   register,
   label,
   fieldError,

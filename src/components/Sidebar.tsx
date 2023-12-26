@@ -20,7 +20,9 @@ import ColorSchemeToggle from './ColorSchemeToggle';
 import { closeSidebar } from '../utils';
 import { Person2Rounded } from '@mui/icons-material';
 import { useAppDispatch } from '../redux/hooks';
-import { signOut } from '../redux/user-slice';
+import { signOut, useUser } from '../redux/user-slice';
+import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '../common';
 
 // function Toggler({
 //   defaultExpanded = false,
@@ -55,11 +57,15 @@ import { signOut } from '../redux/user-slice';
 // }
 
 export default function Sidebar() {
+  const navigate = useNavigate()
+  const user = useUser()
+
   function logout() {
     dispatch(signOut());
   }
+
   const dispatch = useAppDispatch();
- return (
+  return (
     <Sheet
       className="Sidebar"
       sx={{
@@ -142,7 +148,7 @@ export default function Sidebar() {
           }}
         >
           <ListItem>
-            <ListItemButton>
+          <ListItemButton onClick={() => navigate(ROUTES.HOME)}>
               <HomeRoundedIcon />
               <ListItemContent>
                 <Typography level="title-sm">Home</Typography>
@@ -150,14 +156,14 @@ export default function Sidebar() {
             </ListItemButton>
           </ListItem>
 
-          <ListItem>
-            <ListItemButton>
+          {user.role === "ADMIN" && <ListItem>
+            <ListItemButton onClick={() => navigate(ROUTES.USER_CREATE)}>
               <Person2Rounded />
               <ListItemContent>
                 <Typography level="title-sm">Add a user</Typography>
               </ListItemContent>
             </ListItemButton>
-          </ListItem>
+          </ListItem>}
 
           {/* <ListItem>
             <ListItemButton
@@ -298,8 +304,8 @@ export default function Sidebar() {
           src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=286"
         />
         <Box sx={{ minWidth: 0, flex: 1 }}>
-          <Typography level="title-sm">Siriwat K.</Typography>
-          <Typography level="body-xs">siriwatk@test.com</Typography>
+          <Typography level="title-sm" noWrap>{user.email} </Typography>
+          <Typography level="body-xs" noWrap>{user.email}</Typography>
         </Box>
         <IconButton size="sm" variant="plain" color="neutral" onClick={logout}>
           <LogoutRoundedIcon />
