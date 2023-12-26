@@ -5,6 +5,9 @@ import { useAppDispatch } from "../redux/hooks";
 import { setUser } from "../redux/user-slice";
 import useApi, { API_RSRC_LINKS } from "../api/useApi";
 import { LoginModelOut } from "../api/login";
+import { CssVarsProvider, CssBaseline, Box } from "@mui/joy";
+import Sidebar from "../components/Sidebar";
+import Header from "../components/Header";
 
 export default function Root() {
   const token = sessionStorage.getItem(STR_TOKEN);
@@ -57,7 +60,31 @@ export default function Root() {
 export function Home() {
   return (
     <div>
-      <Outlet />
+      <CssVarsProvider disableTransitionOnChange>
+        <CssBaseline />
+        <Box sx={{ display: 'flex', minHeight: '100dvh' }}>
+          <Sidebar />
+          <Header />
+          <Box
+            component="main"
+            className="MainContent"
+            sx={{
+              pt: { xs: 'calc(12px + var(--Header-height))', md: 3 },
+              pb: { xs: 2, sm: 2, md: 3 },
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              minWidth: 0,
+              height: '100dvh',
+              gap: 1,
+              overflow: 'auto',
+            }}
+          >
+            <Outlet />
+
+          </Box>
+        </Box>
+      </CssVarsProvider>
     </div>
   );
 }
