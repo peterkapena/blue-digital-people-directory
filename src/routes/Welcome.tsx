@@ -1,15 +1,14 @@
-import { useAppDispatch } from "../redux/hooks";
-import { signOut } from "../redux/user-slice";
+import { Input, Typography } from "@mui/joy";
+import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 
 function Welcome() {
-  function logout() {
-    dispatch(signOut());
-  }
-  const dispatch = useAppDispatch();
+
   return (
     <div>
-      Welcome
-      <button type="button" onClick={() => logout()}>dsssdsdsd</button>
+      <Typography level="h2">Welcome</Typography>
+      <br />
+      <br />
+      <Input size="sm" startDecorator={<SearchRoundedIcon />} placeholder="Search" />
     </div>
   );
 }
