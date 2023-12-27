@@ -23,7 +23,6 @@ export default function CountrySelector(props: CountrySelectorProps) {
     <FormControl {...other}>
       <FormLabel>Country</FormLabel>
       <Autocomplete
-        size='sm'
         onChange={(_, option) => {
           if (option) {
             setFormValue(option)

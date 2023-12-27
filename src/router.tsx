@@ -30,7 +30,6 @@ export const router = createBrowserRouter([
         path: ROUTES.VIEWPERSON + ":id?",
         element: <ViewPerson />,
       },
-
     ],
   },
   {
