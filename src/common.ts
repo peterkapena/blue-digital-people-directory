@@ -7,6 +7,7 @@ export const APP_NAME = "UGC";
 export const ROUTES = {
   HOME: "/",
   USER_CREATE: "/user/create",
+  PERSON: "/person/",
   SIGNIN: "/sgn/",
   SIGNUP: "/sgnup/",
 };

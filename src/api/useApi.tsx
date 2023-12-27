@@ -61,7 +61,7 @@ function useApi<OUT, IN = null>(rsrc_link: string, {
         if (triggerOnLoad) {
             fetchData(body);
         }
-    }, [fetchData, triggerOnLoad, body]);
+    }, []);
 
     return { data, isLoading, error, fetchData };
 }
@@ -72,6 +72,7 @@ export const API_RSRC_LINKS = {
     login: "user/login",
     verify_tkn: "user/verify_tkn",
     register: "user/register",
+    getpeople: "people/",
 }
 
 export interface CommonOutputModel {
