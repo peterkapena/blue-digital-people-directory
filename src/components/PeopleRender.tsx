@@ -8,6 +8,7 @@ import { useMemo, useState } from "react";
 import { ROUTES } from "../common";
 import CountrySelector from "./CountrySelector";
 import GenderSelect from "./GenderSelect";
+import { useNavigate } from "react-router-dom";
 
 const columns = [
   { id: 'name', numeric: false, label: 'Name' },
@@ -16,10 +17,11 @@ const columns = [
 ];
 
 export function PeopleRender() {
-  const { data } = useApi<PersonOutModel[]>(API_RSRC_LINKS.getpeople, { method: "GET" });
+  const { data } = useApi<PersonOutModel[]>(API_RSRC_LINKS.people, { method: "GET" });
   const [filterPerson, setFilterPerson] = useState<PersonOutModel | null>();
   const [filterCountry, setFilterCountry] = useState<string | null>("");
   const [filterGender, setFilterGender] = useState<string | null>("");
+  const navigate = useNavigate()
 
   const handleAutocompleteChange = (option: any) => {
     if (option && option.value) {
@@ -78,14 +80,13 @@ export function PeopleRender() {
           People
         </Typography>
         <Button
-          color="primary"
+          color="primary" onClick={() => navigate(ROUTES.PERSON)}
           startDecorator={<DownloadDoneRounded />}
           size="sm"
         >
           Add a person
         </Button>
       </Box>
-
       <Box
         className="SearchAndFilters-tabletUp"
         sx={{
@@ -104,15 +105,9 @@ export function PeopleRender() {
           <CustomAutocomplete
             onChange={handleAutocompleteChange}
             placeholder={"Start typing"} options={data.map(p => ({ label: `${p.name} ${p.surname}`, value: p }))} />
-          {/* <CustomAutocomplete
-            onChange={handleAutocompleteChange}
-            placeholder={"Start typing"}
-            options={data.map(p => ({ label: `${p.name} ${p.surname}`, value: p }))}
-          /> */}
-
         </FormControl>
         <CountrySelector setFormValue={(option) => handleCountryFilter(option?.label)} />
-        <GenderSelect setFormValue={(option) => option && handleGenderFilter(option)} />
+        <GenderSelect showTheAllOption={true} setFormValue={(option) => option && handleGenderFilter(option)} />
       </Box>
 
       {filteredData && <CustomTable

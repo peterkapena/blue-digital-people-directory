@@ -72,7 +72,7 @@ export const API_RSRC_LINKS = {
     login: "user/login",
     verify_tkn: "user/verify_tkn",
     register: "user/register",
-    getpeople: "people/",
+    people: "people/",
 }
 
 export interface CommonOutputModel {

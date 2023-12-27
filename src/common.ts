@@ -8,6 +8,7 @@ export const ROUTES = {
   HOME: "/",
   USER_CREATE: "/user/create",
   PERSON: "/person/",
+  VIEWPERSON: "/prsn_profile/",
   SIGNIN: "/sgn/",
   SIGNUP: "/sgnup/",
 };

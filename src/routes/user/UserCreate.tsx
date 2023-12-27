@@ -87,17 +87,17 @@ export default UserCreate;
 const FormSchema = z.object({
     password: z
         .string({})
-        .nonempty("this is required")
+        .min(1, "this is required")
         .min(8, "Not shorter than 8")
         .max(100, "This must be less than 100 characters long"),
     confirm_password: z
         .string({})
-        .nonempty("this is required")
+        .min(1, "this is required")
         .min(8, "Not shorter than 8")
         .max(100, "This must be less than 100 characters long"),
     email_or_username: z
         .string({})
-        .nonempty("this is required")
+        .min(1, "this is required")
         //.email("Invalid email")
         .max(100, "This must be less than 100 characters long"),
     role: z.object({

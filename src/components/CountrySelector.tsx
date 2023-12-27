@@ -6,15 +6,18 @@ import FormControl, { FormControlProps } from '@mui/joy/FormControl';
 import FormLabel from '@mui/joy/FormLabel';
 import ListItemDecorator from '@mui/joy/ListItemDecorator';
 import Typography from '@mui/joy/Typography';
-import { Avatar } from '@mui/joy';
+import { Avatar, FormHelperText } from '@mui/joy';
+import { FieldError } from 'react-hook-form';
+import { InfoOutlined } from '@mui/icons-material';
 
 interface CountrySelectorProps extends FormControlProps {
-  setFormValue: (option: CountryType | null) => void
+  setFormValue: (option: CountryType | null) => void;
+  fieldError?: FieldError | undefined;
 }
 
 export default function CountrySelector(props: CountrySelectorProps) {
-  const { sx, setFormValue, ...other } = props;
-  const [country, setCountry] = React.useState<CountryType | null>(countries[0])
+  const { sx, setFormValue, fieldError, ...other } = props;
+  const [country, setCountry] = React.useState<CountryType | null>()
 
   return (
     <FormControl {...other}>
@@ -35,7 +38,7 @@ export default function CountrySelector(props: CountrySelectorProps) {
           }
         }}
         isOptionEqualToValue={(option, value) => option.code === value.code}
-        defaultValue={{ code: 'TH', label: 'Thailand', phone: '66' }}
+        // defaultValue={{ code: 'TH', label: 'Thailand', phone: '66' }}
         options={countries}
         startDecorator={country && <Avatar size='sm' src={`https://flagcdn.com/w20/${country.code.toLowerCase()}.png`} />}
         renderOption={(optionProps, option) => (
@@ -63,6 +66,13 @@ export default function CountrySelector(props: CountrySelectorProps) {
           },
         }}
       />
+
+      {fieldError?.message && (
+        <FormHelperText sx={{ color: "red" }}>
+          <InfoOutlined color="error" />
+          {fieldError.message}
+        </FormHelperText>
+      )}
     </FormControl>
   );
 }

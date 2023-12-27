@@ -5,7 +5,8 @@ import Root from "./routes/Root";
 import ErrorPage from "./error-page";
 import Welcome from "./routes/Welcome";
 import UserCreate from "./routes/user/UserCreate";
-import Person from "./routes/person/Person";
+import AddPerson from "./routes/person/AddPerson";
+import ViewPerson from "./routes/person/ViewPerson";
 
 export const router = createBrowserRouter([
   {
@@ -23,8 +24,13 @@ export const router = createBrowserRouter([
       },
       {
         path: ROUTES.PERSON + ":id?",
-        element: <Person />,
+        element: <AddPerson />,
       },
+      {
+        path: ROUTES.VIEWPERSON + ":id?",
+        element: <ViewPerson />,
+      },
+
     ],
   },
   {
