@@ -6,21 +6,38 @@ import FormControl, { FormControlProps } from '@mui/joy/FormControl';
 import FormLabel from '@mui/joy/FormLabel';
 import ListItemDecorator from '@mui/joy/ListItemDecorator';
 import Typography from '@mui/joy/Typography';
+import { Avatar } from '@mui/joy';
 
-export default function ContrySelector(props: FormControlProps) {
-  const { sx, ...other } = props;
+interface CountrySelectorProps extends FormControlProps {
+  setFormValue: (option: CountryType | null) => void
+}
+
+export default function CountrySelector(props: CountrySelectorProps) {
+  const { sx, setFormValue, ...other } = props;
+  const [country, setCountry] = React.useState<CountryType | null>(countries[0])
+
   return (
-    <FormControl
-      {...other}
-      sx={[{ display: { sm: 'contents' } }, ...(Array.isArray(sx) ? sx : [sx])]}
-    >
+    <FormControl {...other}>
       <FormLabel>Country</FormLabel>
       <Autocomplete
-        size="sm"
+        size='sm'
+        onChange={(_, option) => {
+          if (option) {
+            setFormValue(option)
+            setCountry(option)
+          }
+        }}
         autoHighlight
+        onInputChange={(_, text) => {
+          if (!text) {
+            setFormValue(null)
+            setCountry(null)
+          }
+        }}
         isOptionEqualToValue={(option, value) => option.code === value.code}
         defaultValue={{ code: 'TH', label: 'Thailand', phone: '66' }}
         options={countries}
+        startDecorator={country && <Avatar size='sm' src={`https://flagcdn.com/w20/${country.code.toLowerCase()}.png`} />}
         renderOption={(optionProps, option) => (
           <AutocompleteOption {...optionProps}>
             <ListItemDecorator>
@@ -58,6 +75,7 @@ interface CountryType {
 }
 
 // From https://bitbucket.org/atlassian/atlaskit-mk-2/raw/4ad0e56649c3e6c973e226b7efaeb28cb240ccb0/packages/core/select/src/data/countries.js
+
 const countries: readonly CountryType[] = [
   { code: 'AD', label: 'Andorra', phone: '376' },
   {

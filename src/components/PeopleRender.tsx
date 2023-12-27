@@ -1,12 +1,13 @@
-import { Box, Button, FormControl, FormLabel, Select, Typography } from "@mui/joy";
+import { Box, Button, FormControl, FormLabel, Typography } from "@mui/joy";
 import CustomAutocomplete from "./CustomAutocomplete";
 import { DownloadDoneRounded } from "@mui/icons-material";
 import CustomTable from "./CustomTable";
-import Option from '@mui/joy/Option';
 import useApi, { API_RSRC_LINKS } from "../api/useApi";
 import { PersonOutModel } from "../api/people";
 import { useMemo, useState } from "react";
 import { ROUTES } from "../common";
+import CountrySelector from "./CountrySelector";
+import GenderSelect from "./GenderSelect";
 
 const columns = [
   { id: 'name', numeric: false, label: 'Name' },
@@ -16,24 +17,49 @@ const columns = [
 
 export function PeopleRender() {
   const { data } = useApi<PersonOutModel[]>(API_RSRC_LINKS.getpeople, { method: "GET" });
-  const [filteredData, setFilteredData] = useState<PersonOutModel[]>([]);
-
-  const tableData = useMemo(() => {
-    return filteredData.length > 0 ? filteredData : data;
-  }, [filteredData, data]);
+  const [filterPerson, setFilterPerson] = useState<PersonOutModel | null>();
+  const [filterCountry, setFilterCountry] = useState<string | null>("");
+  const [filterGender, setFilterGender] = useState<string | null>("");
 
   const handleAutocompleteChange = (option: any) => {
-    console.log(option?.value)
-    if (!option?.value && data) {
-      setFilteredData(data);
-    } else if (data) {
-      const filtered = data.filter(person => person.id === option.value.id);
-      setFilteredData(filtered);
+    if (option && option.value) {
+      setFilterPerson(option.value);
+    } else {
+      setFilterPerson(null); // Reset filter when selection is cleared
     }
   };
 
+  const handleCountryFilter = (country: any) => {
+    if (country) {
+      setFilterCountry(country);
+    } else {
+      setFilterCountry(""); // Reset filter when selection is cleared
+    }
+  };
+
+  const handleGenderFilter = (gender: string) => {
+    if (gender && gender !== "all") {
+      setFilterGender(gender);
+    } else {
+      setFilterGender(null); // Reset filter when selection is cleared
+    }
+  };
+
+  const filteredData = useMemo(() => {
+    if (!data) return [];
+
+    return data.filter((person) => {
+
+      return (
+        (!filterPerson || person.id === filterPerson.id) &&
+        (!filterCountry || person.country === filterCountry) &&
+        (!filterGender || person.gender === filterGender)
+      );
+    });
+  }, [data, filterPerson, filterCountry, filterGender]);
+
   if (!data || data.length === 0)
-    return <div>No data</div>
+    return <div>No data</div>;
 
   return (
     <Box>
@@ -78,42 +104,19 @@ export function PeopleRender() {
           <CustomAutocomplete
             onChange={handleAutocompleteChange}
             placeholder={"Start typing"} options={data.map(p => ({ label: `${p.name} ${p.surname}`, value: p }))} />
+          {/* <CustomAutocomplete
+            onChange={handleAutocompleteChange}
+            placeholder={"Start typing"}
+            options={data.map(p => ({ label: `${p.name} ${p.surname}`, value: p }))}
+          /> */}
+
         </FormControl>
-        <FormControl size="sm">
-          <FormLabel>Country</FormLabel>
-          <Select
-            size="sm"
-            placeholder="Filter by country"
-            slotProps={{ button: { sx: { whiteSpace: 'nowrap' } } }}
-          >
-            <Option value="paid">Paid</Option>
-            <Option value="pending">Pending</Option>
-            <Option value="refunded">Refunded</Option>
-            <Option value="cancelled">Cancelled</Option>
-          </Select>
-        </FormControl>
-        <FormControl size="sm">
-          <FormLabel>City</FormLabel>
-          <Select size="sm" placeholder="All">
-            <Option value="all">All</Option>
-            <Option value="refund">Refund</Option>
-            <Option value="purchase">Purchase</Option>
-            <Option value="debit">Debit</Option>
-          </Select>
-        </FormControl>
-        <FormControl size="sm">
-          <FormLabel>Gender</FormLabel>
-          <Select size="sm" placeholder="All">
-            <Option value="all">All</Option>
-            <Option value="M">M</Option>
-            <Option value="F">F</Option>
-            <Option value="Other">Other</Option>
-          </Select>
-        </FormControl>
+        <CountrySelector setFormValue={(option) => handleCountryFilter(option?.label)} />
+        <GenderSelect setFormValue={(option) => option && handleGenderFilter(option)} />
       </Box>
 
-      {tableData && <CustomTable
-        data={tableData.map(p => ({
+      {filteredData && <CustomTable
+        data={filteredData.map(p => ({
           "name": p.name,
           "surname": p.surname,
           "emailAddress": p.emailAddress || "",

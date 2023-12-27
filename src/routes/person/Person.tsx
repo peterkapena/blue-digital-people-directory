@@ -26,12 +26,14 @@ import { z } from 'zod';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
+import GenderSelect from '../../components/GenderSelect';
 
 const Person = () => {
   const { id } = useParams();
   const { data } = useApi<PersonOutModel>(API_RSRC_LINKS.getpeople + id, { method: "GET" });
   const [showSubmitButton, setShowSubmitButton] = useState(true);
   const [messages, setMessages] = useState<string[]>([])
+  const [filterCountry, setFilterCountry] = useState("")
 
   const {
     register,
@@ -56,7 +58,6 @@ const Person = () => {
   };
 
   return (
-
     <Card>
       <form onSubmit={handleSubmit(processForm)}>
         <Box sx={{ mb: 1 }}>
@@ -123,22 +124,12 @@ const Person = () => {
                 fieldError={errors.emailAddress}
                 type="text"
               ></TextField>
-              <FormControl sx={{ my: 1 }}>
-                <FormLabel>Gender</FormLabel>
-                <Select
-                  placeholder="select"
-                  defaultValue="1"
-                >
-                  <Option value="M">Male</Option>
-                  <Option value="F">Female</Option>
-                </Select>
-              </FormControl>
+              {/* <GenderSelect></GenderSelect> */}
             </Stack>
             <div>
-              <CountrySelector />
-            </div>
-            <div>
-              <CountrySelector />
+              <CountrySelector setFormValue={(option) => {
+                option && setFilterCountry(option.label)
+              }} />
             </div>
           </Stack>
         </Stack>
@@ -210,9 +201,6 @@ const Person = () => {
               sx={{ flexGrow: 1 }}
             />
           </FormControl>
-          <div>
-            <CountrySelector />
-          </div>
           <div>
             <FormControl sx={{ display: { sm: 'contents' } }}>
               <FormLabel>Timezone</FormLabel>

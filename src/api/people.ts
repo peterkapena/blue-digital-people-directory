@@ -1,3 +1,5 @@
+import { Role } from "../redux/user-slice";
+
 export interface PersonOutModel {
     id: number,
     name: string,
@@ -8,4 +10,15 @@ export interface PersonOutModel {
     emailAddress: string | null,
     country: string | null,
     city: string | null,
+}
+
+export const PermissionsOnPeople = {
+    canEdit: (role: Role): boolean => {
+        switch (role) {
+            case "ADMIN":
+                return true
+            default:
+                return false
+        }
+    }
 }
