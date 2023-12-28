@@ -5,71 +5,100 @@ import {
   Card,
   Divider,
   FormLabel,
+  IconButton,
   Stack,
   Typography,
 } from "@mui/joy";
 import { useParams } from "react-router-dom";
 import useApi, { API_RSRC_LINKS } from "../../api/useApi";
 import { PersonOutModel } from "../../api/people";
-import CountrySelector from "../../components/CountrySelector";
+import CountrySelector, { countries } from "../../components/CountrySelector";
 import TextField from '../../components/TextField';
 import { z } from 'zod';
-import { SubmitHandler, useForm } from 'react-hook-form';
+import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import GenderSelect from '../../components/GenderSelect';
 import { IS_DEVELOPER } from '../../common';
 import { SubmitButton } from '../../components/SubmitButton';
 import { Notice } from '../../components/Notice';
+import { DeleteRounded } from "@mui/icons-material";
 
 const AddPerson = () => {
-  const { data, fetchData } = useApi<PersonOutModel, PersonOutModel>(API_RSRC_LINKS.people,
+  const { id } = useParams()
+  const { data, fetchData } = useApi<PersonOutModel, PersonOutModel>(API_RSRC_LINKS.people + (id || ""),
     {
-      method: "POST",
+      method: id ? "GET" : "POST",
+      triggerOnLoad: Boolean(id)
+    });
+
+  const { fetchData: putPerson } = useApi<PersonOutModel, PersonOutModel>(API_RSRC_LINKS.people + (id || ""),
+    {
+      method: "PUT",
       triggerOnLoad: false
     });
+
   const [showSubmitButton, setShowSubmitButton] = useState(true);
   const [messages, setMessages] = useState<string[]>([])
 
-  const {
-    register,
-    handleSubmit,
-    reset, control, setValue,
-    formState: { errors },
-  } = useForm<FormSchemaType>({
-    resolver: zodResolver(FormSchema),
-    defaultValues: {
-      country: data?.country || "",
-      emailAddress: data?.emailAddress || "",
-      gender: data?.gender || "",
-      mobileNumber: data?.mobileNumber || "",
-      name: data?.name,
-      surname: data?.surname
-    }
+  const { register, handleSubmit, reset, control, setValue, formState: { errors } } = useForm<FormSchemaType>({
+    resolver: zodResolver(FormSchema)
   });
 
-  const processForm: SubmitHandler<FormSchemaType> = async (form_data) => {
-    // console.log(form_data)
-    const rtn = await fetchData({ id: 0, profilePictureUrl: "", city: "", ...form_data })
-    IS_DEVELOPER && console.log(data)
-
-    if (!rtn?.id) {
-      setMessages(['An error happened or this user already exists in the system']);
-    } else {
-      setMessages(['Person has been added']);
+  useEffect(() => {
+    if (data) {
+      // console.log(data)
+      reset({
+        country: data.country || "",
+        emailAddress: data.emailAddress || "",
+        gender: data.gender || "",
+        mobileNumber: data.mobileNumber || "",
+        name: data.name || "",
+        surname: data.surname || ""
+      });
     }
+  }, [data, reset]);
+
+  const processForm: SubmitHandler<FormSchemaType> = async (form_data) => {
+    let rtn;
+    if (id) {
+      rtn = await putPerson({ id: Number(id), profilePictureUrl: "", city: "", ...form_data })
+      setMessages(['Success!']);
+      IS_DEVELOPER && console.log(rtn)
+    } else {
+      rtn = await fetchData({ id: 0, profilePictureUrl: "", city: "", ...form_data })
+      if (rtn?.id) {
+        setMessages(['Success!']);
+      } else {
+        setMessages(['An error happened or this user already exists in the system']);
+      }
+    }
+
     setShowSubmitButton(false);
-    !IS_DEVELOPER && reset();
+    !IS_DEVELOPER && !id && reset();
   };
 
   return (
     <Card>
       <form onSubmit={handleSubmit(processForm)}>
-        <Box sx={{ mb: 1 }}>
-          <Typography level="title-md">Person info</Typography>
-          <Typography level="body-sm">
-            Edit person
-          </Typography>
+        <Box sx={{
+          mb: 1,
+          display: 'flex',
+          gap: 1,
+          flexDirection: { xs: 'column', sm: 'row' },
+          alignItems: { xs: 'start', sm: 'center' },
+          flexWrap: 'wrap',
+          justifyContent: 'space-between',
+        }}>
+          <div>
+            <Typography level="title-md">{data ? `${data.name} ${data.surname}` : "Person info"}</Typography>
+            <Typography level="body-sm">
+              {data ? `Editing ${data.name} ${data.surname}` : "Add a person to the directory"}
+            </Typography>
+          </div>
+          <IconButton color="danger">
+            <DeleteRounded />
+          </IconButton>
         </Box>
         <Divider />
         <Stack
@@ -90,14 +119,14 @@ const AddPerson = () => {
             <Stack spacing={1}>
               <FormLabel>Name</FormLabel>
               <TextField
-                disabled={Boolean(!showSubmitButton)}
+                disabled={!showSubmitButton}
                 label={""}
                 fieldName="name"
                 placeholder="First name"
                 register={register}
                 fieldError={errors.name}
                 type="text"
-              ></TextField>
+              />
               <TextField
                 disabled={Boolean(!showSubmitButton)}
                 label={""}
@@ -127,37 +156,38 @@ const AddPerson = () => {
                 fieldError={errors.emailAddress}
                 type="text"
               ></TextField>
-              <GenderSelect fieldError={errors.gender}
-                setFormValue={(value) => {
-                  console.log(value)
-                  setValue("gender", value)
-                }}></GenderSelect>
+              <Controller
+                name="gender"
+                control={control}
+                render={({ field }) => (
+                  <GenderSelect
+                    setFormValue={(option) => {
+                      setValue(field.name, option)
+                    }}
+                    value={field.value}
+                    name={field.name}
+                    fieldError={errors.gender}
+                  />
+                )}
+              />
             </Stack>
-            <div>
-              <CountrySelector fieldError={errors.country}
-                setFormValue={(option) => {
-                  console.log(option)
-                  setValue("country", option?.label || "")
-                }} />
-            </div>
+            <Controller
+              name="country"
+              control={control}
+              render={({ field }) => (
+                <CountrySelector
+                  onChange={field.onChange}
+                  value={field.value}
+                  fieldError={errors.country}
+                />
+              )}
+            />
           </Stack>
         </Stack>
         {showSubmitButton && <SubmitButton></SubmitButton>}
         {!showSubmitButton && messages.length > 0 && (
           <Notice messages={messages} isSuccess={messages.length > 0} onClose={() => { setMessages([]); setShowSubmitButton(true); }} />
         )}
-
-        {/* <CardOverflow sx={{ borderTop: '1px solid', borderColor: 'divider' }}>
-          <CardActions sx={{ alignSelf: 'flex-end', pt: 2 }}>
-            <Button size="sm" variant="outlined" color="neutral">
-              Cancel
-            </Button>
-            <Button size="sm" type='submit' variant="solid">
-              Save
-            </Button>
-          </CardActions>
-        </CardOverflow> */}
-
       </form>
     </Card>
   );
@@ -197,9 +227,3 @@ const FormSchema = z.object({
 });
 
 type FormSchemaType = z.infer<typeof FormSchema>;
-
-interface ValidationResult {
-  success: boolean;
-  data: FormSchemaType;
-  _id?: string;
-}

@@ -6,7 +6,6 @@ import ErrorPage from "./error-page";
 import Welcome from "./routes/Welcome";
 import UserCreate from "./routes/user/UserCreate";
 import AddPerson from "./routes/person/AddPerson";
-import ViewPerson from "./routes/person/ViewPerson";
 
 export const router = createBrowserRouter([
   {
@@ -25,10 +24,6 @@ export const router = createBrowserRouter([
       {
         path: ROUTES.PERSON + ":id?",
         element: <AddPerson />,
-      },
-      {
-        path: ROUTES.VIEWPERSON + ":id?",
-        element: <ViewPerson />,
       },
     ],
   },

@@ -12,13 +12,15 @@ import Tooltip from '@mui/joy/Tooltip';
 import Select from '@mui/joy/Select';
 import Option from '@mui/joy/Option';
 import DeleteIcon from '@mui/icons-material/Delete';
-import FilterListIcon from '@mui/icons-material/FilterList';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { visuallyHidden } from '@mui/utils';
 import { Button } from '@mui/joy';
 import { useNavigate } from 'react-router-dom';
+import AlertDialogModal from './Alert';
+import useApi, { API_RSRC_LINKS } from '../api/useApi';
+import { PersonOutModel } from '../api/people';
 
 // Types for props
 interface Data {
@@ -35,7 +37,9 @@ interface TableProps {
     data: Data[];
     columns: Column[];
     title: string;
-    editPage: string
+    editPage: string;
+    onDelete: (data: Data) => void
+    handleDeleteAll: (selected: readonly string[]) => void
 }
 
 function labelDisplayedRows({
@@ -74,10 +78,6 @@ function getComparator<Key extends keyof any>(
         : (a, b) => -descendingComparator(a, b, orderBy);
 }
 
-// Since 2020 all major browsers ensure sort stability with Array.prototype.sort().
-// stableSort() brings sort stability to non-modern browsers (notably IE11). If you
-// only support modern browsers you can replace stableSort(exampleArray, exampleComparator)
-// with exampleArray.slice().sort(exampleComparator)
 function stableSort<T>(array: readonly T[], comparator: (a: T, b: T) => number) {
     const stabilizedThis = array.map((el, index) => [el, index] as [T, number]);
     stabilizedThis.sort((a, b) => {
@@ -89,14 +89,6 @@ function stableSort<T>(array: readonly T[], comparator: (a: T, b: T) => number) 
     });
     return stabilizedThis.map((el) => el[0]);
 }
-
-interface HeadCell {
-    disablePadding: boolean;
-    id: keyof Data;
-    label: string;
-    numeric: boolean;
-}
-
 
 interface EnhancedTableProps {
     numSelected: number;
@@ -188,11 +180,12 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 
 interface EnhancedTableToolbarProps {
     numSelected: number;
-    title: string
+    title: string;
+    setConfirmDelete: () => void
 }
 
 function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
-    const { numSelected } = props;
+    const { numSelected, setConfirmDelete } = props;
 
     return (
         <Box
@@ -226,7 +219,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
 
             {numSelected > 0 ? (
                 <Tooltip title="Delete">
-                    <IconButton size="sm" color="danger" variant="solid">
+                    <IconButton size="sm" color="danger" variant="solid" onClick={setConfirmDelete}>
                         <DeleteIcon />
                     </IconButton>
                 </Tooltip>
@@ -238,13 +231,14 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
     );
 }
 
-export default function TableSortAndSelection({ columns, data, title, editPage }: TableProps) {
+export default function TableSortAndSelection({ columns, data, title, editPage, onDelete, handleDeleteAll }: TableProps) {
     const navigate = useNavigate()
     const [order, setOrder] = React.useState<Order>('asc');
     const [orderBy, setOrderBy] = React.useState<keyof Data>('calories');
     const [selected, setSelected] = React.useState<readonly string[]>([]);
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(5);
+    const [confirmDelete, setConfirmDelete] = React.useState<string>();
 
     const handleRequestSort = (
         event: React.MouseEvent<unknown>,
@@ -257,7 +251,7 @@ export default function TableSortAndSelection({ columns, data, title, editPage }
 
     const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.checked) {
-            const newSelected = data.map((n) => String(n.name));
+            const newSelected = data.map((n) => String(n.id));
             setSelected(newSelected);
             return;
         }
@@ -302,6 +296,11 @@ export default function TableSortAndSelection({ columns, data, title, editPage }
             : Math.min(data.length, (page + 1) * rowsPerPage);
     };
 
+    const handleYes = async () => {
+        handleDeleteAll(selected)
+        setConfirmDelete("")
+    };
+
     const isSelected = (name: string) => selected.indexOf(name) !== -1;
 
     // Avoid a layout jump when reaching the last page with empty rows.
@@ -313,7 +312,17 @@ export default function TableSortAndSelection({ columns, data, title, editPage }
             variant="outlined"
             sx={{ width: '100%', boxShadow: 'sm', borderRadius: 'sm' }}
         >
-            <EnhancedTableToolbar title={title} numSelected={selected.length} />
+            <EnhancedTableToolbar setConfirmDelete={() => setConfirmDelete("selected")} title={title} numSelected={selected.length} />
+
+            {confirmDelete && (
+                <AlertDialogModal
+                    message={`Please confirm deletion of ${selected.length} items. Are you sure?`}
+                    onClose={() => setConfirmDelete("")}
+                    onYes={() => handleYes()}
+                    type="confirm"
+                />
+            )}
+
             <Table
                 stripe={'even'}
                 aria-labelledby="tableTitle"
@@ -387,7 +396,9 @@ export default function TableSortAndSelection({ columns, data, title, editPage }
                                                     onClick={() => navigate(editPage + row.id)}>
                                                     Edit
                                                 </Button>
-                                                <Button size="sm" variant="soft" color="danger">
+                                                <Button size="sm" variant="soft" color="danger"
+                                                    onClick={() => onDelete(row)}
+                                                >
                                                     Delete
                                                 </Button>
                                             </Box>

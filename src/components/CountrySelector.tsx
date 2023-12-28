@@ -2,43 +2,38 @@ import * as React from 'react';
 import Autocomplete from '@mui/joy/Autocomplete';
 import AutocompleteOption from '@mui/joy/AutocompleteOption';
 import AspectRatio from '@mui/joy/AspectRatio';
-import FormControl, { FormControlProps } from '@mui/joy/FormControl';
+import FormControl from '@mui/joy/FormControl';
 import FormLabel from '@mui/joy/FormLabel';
 import ListItemDecorator from '@mui/joy/ListItemDecorator';
 import Typography from '@mui/joy/Typography';
 import { Avatar, FormHelperText } from '@mui/joy';
 import { FieldError } from 'react-hook-form';
-import { InfoOutlined } from '@mui/icons-material';
+import { InfoOutlined, Phone } from '@mui/icons-material';
 
-interface CountrySelectorProps extends FormControlProps {
-  setFormValue: (option: CountryType | null) => void;
+interface CountrySelectorProps {
+  onChange: (option: any) => void;
   fieldError?: FieldError | undefined;
+  value?: string;
+  name?: string;
 }
 
 export default function CountrySelector(props: CountrySelectorProps) {
-  const { sx, setFormValue, fieldError, ...other } = props;
+  const { name, value, onChange, fieldError, ...other } = props;
   const [country, setCountry] = React.useState<CountryType | null>()
 
   return (
     <FormControl {...other}>
       <FormLabel>Country</FormLabel>
       <Autocomplete
-        onChange={(_, option) => {
-          if (option) {
-            setFormValue(option)
-            setCountry(option)
-          }
-        }}
-        autoHighlight
+        name={name}
+        value={value || null}
+        onChange={(_, newValue) => onChange(newValue)}
         onInputChange={(_, text) => {
           if (!text) {
-            setFormValue(null)
             setCountry(null)
           }
         }}
-        isOptionEqualToValue={(option, value) => option.code === value.code}
-        // defaultValue={{ code: 'TH', label: 'Thailand', phone: '66' }}
-        options={countries}
+        options={countries.map(c => c.label)}
         startDecorator={country && <Avatar size='sm' src={`https://flagcdn.com/w20/${country.code.toLowerCase()}.png`} />}
         renderOption={(optionProps, option) => (
           <AutocompleteOption {...optionProps}>
@@ -47,15 +42,15 @@ export default function CountrySelector(props: CountrySelectorProps) {
                 <img
                   loading="lazy"
                   width="20"
-                  srcSet={`https://flagcdn.com/w40/${option.code.toLowerCase()}.png 2x`}
-                  src={`https://flagcdn.com/w20/${option.code.toLowerCase()}.png`}
+                  srcSet={`https://flagcdn.com/w40/${countries.find(c => c.label === option)?.code.toLowerCase()}.png 2x`}
+                  src={`https://flagcdn.com/w20/${countries.find(c => c.label === option)?.code.toLowerCase()}.png`}
                   alt=""
                 />
               </AspectRatio>
             </ListItemDecorator>
-            {option.label}
+            {option}
             <Typography component="span" textColor="text.tertiary" ml={0.5}>
-              (+{option.phone})
+              ({countries.find(c => c.label === option)?.phone})
             </Typography>
           </AutocompleteOption>
         )}
@@ -85,7 +80,7 @@ interface CountryType {
 
 // From https://bitbucket.org/atlassian/atlaskit-mk-2/raw/4ad0e56649c3e6c973e226b7efaeb28cb240ccb0/packages/core/select/src/data/countries.js
 
-const countries: readonly CountryType[] = [
+export const countries: readonly CountryType[] = [
   { code: 'AD', label: 'Andorra', phone: '376' },
   {
     code: 'AE',

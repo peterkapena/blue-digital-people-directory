@@ -21,7 +21,6 @@ export default function Root() {
     const verifyTokenAsync = async () => {
       try {
         const data = await fetchData(null);
-        if (IS_DEVELOPER) console.log(data);
         if (data?.token) {
           const {
             email,
