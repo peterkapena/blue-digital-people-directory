@@ -11,7 +11,7 @@ import {
 } from "@mui/joy";
 import { useParams } from "react-router-dom";
 import useApi, { API_RSRC_LINKS } from "../../api/useApi";
-import { PersonOutModel } from "../../api/people";
+import { PermissionsOnPeople, PersonOutModel } from "../../api/people";
 import CountrySelector, { countries } from "../../components/CountrySelector";
 import TextField from '../../components/TextField';
 import { z } from 'zod';
@@ -23,8 +23,10 @@ import { IS_DEVELOPER } from '../../common';
 import { SubmitButton } from '../../components/SubmitButton';
 import { Notice } from '../../components/Notice';
 import { DeleteRounded } from "@mui/icons-material";
+import { useUser } from "../../redux/user-slice";
 
 const AddPerson = () => {
+  const user = useUser()
   const { id } = useParams()
   const { data, fetchData } = useApi<PersonOutModel, PersonOutModel>(API_RSRC_LINKS.people + (id || ""),
     {
@@ -96,9 +98,9 @@ const AddPerson = () => {
               {data ? `Editing ${data.name} ${data.surname}` : "Add a person to the directory"}
             </Typography>
           </div>
-          <IconButton color="danger">
+          {user.role && PermissionsOnPeople.canDelete(user.role) && <IconButton color="danger">
             <DeleteRounded />
-          </IconButton>
+          </IconButton>}
         </Box>
         <Divider />
         <Stack

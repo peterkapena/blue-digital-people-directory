@@ -23,6 +23,7 @@ import { useAppDispatch } from '../redux/hooks';
 import { signOut, useUser } from '../redux/user-slice';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../common';
+import { PermissionsOnUser } from '../api/register_or_add_user';
 
 // function Toggler({
 //   defaultExpanded = false,
@@ -148,7 +149,7 @@ export default function Sidebar() {
           }}
         >
           <ListItem>
-          <ListItemButton onClick={() => navigate(ROUTES.HOME)}>
+            <ListItemButton onClick={() => navigate(ROUTES.HOME)}>
               <HomeRoundedIcon />
               <ListItemContent>
                 <Typography level="title-sm">Home</Typography>
@@ -156,7 +157,7 @@ export default function Sidebar() {
             </ListItemButton>
           </ListItem>
 
-          {user.role === "ADMIN" && <ListItem>
+          {user.role && PermissionsOnUser.canAdd(user.role) && <ListItem>
             <ListItemButton onClick={() => navigate(ROUTES.USER_CREATE)}>
               <Person2Rounded />
               <ListItemContent>

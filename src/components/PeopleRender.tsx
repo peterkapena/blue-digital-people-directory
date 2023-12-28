@@ -3,13 +3,14 @@ import CustomAutocomplete from "./CustomAutocomplete";
 import { DownloadDoneRounded } from "@mui/icons-material";
 import CustomTable from "./CustomTable";
 import useApi, { API_RSRC_LINKS } from "../api/useApi";
-import { PersonOutModel } from "../api/people";
+import { PermissionsOnPeople, PersonOutModel } from "../api/people";
 import { useMemo, useState } from "react";
 import { ROUTES } from "../common";
 import CountrySelector from "./CountrySelector";
 import GenderSelect from "./GenderSelect";
 import { useNavigate } from "react-router-dom";
 import AlertDialogModal from "./Alert";
+import { useUser } from "../redux/user-slice";
 
 const columns = [
   { id: 'name', numeric: false, label: 'Name' },
@@ -18,6 +19,7 @@ const columns = [
 ];
 
 export function PeopleRender() {
+  const user = useUser()
   const { data, fetchData } = useApi<PersonOutModel[]>(API_RSRC_LINKS.people, { method: "GET" });
 
   const [filterPerson, setFilterPerson] = useState<PersonOutModel | null>();
@@ -86,13 +88,14 @@ export function PeopleRender() {
         <Typography level="h2" component="h1">
           People
         </Typography>
-        <Button
+
+        {user.role && PermissionsOnPeople.canAdd(user.role) && <Button
           color="primary" onClick={() => navigate(ROUTES.PERSON)}
           startDecorator={<DownloadDoneRounded />}
           size="sm"
         >
           Add a person
-        </Button>
+        </Button>}
       </Box>
       <Box
         className="SearchAndFilters-tabletUp"
@@ -131,6 +134,7 @@ export function PeopleRender() {
       )}
 
       {filteredData && <CustomTable
+        canDelete={(user.role && PermissionsOnPeople.canDelete(user.role)) || false}
         handleDeleteAll={async (selected: readonly string[]) => {
           await deletePeople(selected.map(id => Number(id)));
           fetchData(null)

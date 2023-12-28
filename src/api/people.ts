@@ -20,5 +20,21 @@ export const PermissionsOnPeople = {
             default:
                 return false
         }
+    },
+    canAdd: (role: Role): boolean => {
+        switch (role) {
+            case "ADMIN":
+                return true
+            default:
+                return false
+        }
+    },
+    canDelete: (role: Role): boolean => {
+        switch (role) {
+            case "ADMIN":
+                return true
+            default:
+                return false
+        }
     }
 }

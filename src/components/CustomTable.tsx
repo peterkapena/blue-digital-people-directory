@@ -39,7 +39,8 @@ interface TableProps {
     title: string;
     editPage: string;
     onDelete: (data: Data) => void
-    handleDeleteAll: (selected: readonly string[]) => void
+    handleDeleteAll: (selected: readonly string[]) => void;
+    canDelete: boolean
 }
 
 function labelDisplayedRows({
@@ -231,7 +232,7 @@ function EnhancedTableToolbar(props: EnhancedTableToolbarProps) {
     );
 }
 
-export default function TableSortAndSelection({ columns, data, title, editPage, onDelete, handleDeleteAll }: TableProps) {
+export default function TableSortAndSelection({ columns, data, title, editPage, onDelete, handleDeleteAll, canDelete }: TableProps) {
     const navigate = useNavigate()
     const [order, setOrder] = React.useState<Order>('asc');
     const [orderBy, setOrderBy] = React.useState<keyof Data>('calories');
@@ -394,13 +395,13 @@ export default function TableSortAndSelection({ columns, data, title, editPage, 
                                             <Box sx={{ display: 'flex', gap: 1 }}>
                                                 <Button size="sm" variant="plain" color="neutral"
                                                     onClick={() => navigate(editPage + row.id)}>
-                                                    Edit
+                                                    View
                                                 </Button>
-                                                <Button size="sm" variant="soft" color="danger"
+                                                {canDelete && <Button size="sm" variant="soft" color="danger"
                                                     onClick={() => onDelete(row)}
                                                 >
                                                     Delete
-                                                </Button>
+                                                </Button>}
                                             </Box>
                                         </td>
                                     </tr>
