@@ -22,9 +22,10 @@ import AlertDialogModal from './Alert';
 import useApi, { API_RSRC_LINKS } from '../api/useApi';
 import { PersonOutModel } from '../api/people';
 
+type CommonType = number | string | Date | boolean;
 // Types for props
 interface Data {
-    [key: string]: number | string;
+    [key: string]: CommonType;
 }
 
 interface Column {
@@ -71,8 +72,8 @@ function getComparator<Key extends keyof any>(
     order: Order,
     orderBy: Key,
 ): (
-    a: { [key in Key]: number | string },
-    b: { [key in Key]: number | string },
+    a: { [key in Key]: CommonType },
+    b: { [key in Key]: CommonType },
 ) => number {
     return order === 'desc'
         ? (a, b) => descendingComparator(a, b, orderBy)
@@ -364,7 +365,7 @@ export default function TableSortAndSelection({ columns, data, title, editPage, 
                                         role="checkbox"
                                         aria-checked={isItemSelected}
                                         tabIndex={-1}
-                                        key={row.id}
+                                        key={row.id as string}
                                         style={
                                             isItemSelected ? {
                                                 '--TableCell-dataBackground': 'var(--TableCell-selectedBackground)',
@@ -387,7 +388,7 @@ export default function TableSortAndSelection({ columns, data, title, editPage, 
                                         {columns.map((column) => {
                                             return (
                                                 <td key={column.id} align={column.numeric ? 'right' : 'left'}>
-                                                    {row[column.id]}
+                                                    {String(row[column.id])}
                                                 </td>
                                             );
                                         })}
